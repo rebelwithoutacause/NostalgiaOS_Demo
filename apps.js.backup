@@ -1,0 +1,1058 @@
+/**
+ * APPS.JS
+ * Application definitions for retro web OS
+ */
+
+function initializeApps() {
+
+    // =====================
+    // MY COMPUTER
+    // =====================
+    WindowManager.registerApp({
+        id: 'mycomputer',
+        title: 'My Computer',
+        icon: '💻',
+        launch() {
+            WindowManager.createWindow({
+                title: 'My Computer',
+                icon: '💻',
+                width: 500,
+                height: 400,
+                content: `
+                    <div class="file-browser">
+                        <div class="file-item" data-target="documents">
+                            <span class="file-icon">📁</span>
+                            <span class="file-name">C:\\Documents</span>
+                        </div>
+                        <div class="file-item" data-target="games">
+                            <span class="file-icon">🎮</span>
+                            <span class="file-name">C:\\Games</span>
+                        </div>
+                        <div class="file-item">
+                            <span class="file-icon">🖥️</span>
+                            <span class="file-name">C:\\System</span>
+                        </div>
+                        <div class="file-item">
+                            <span class="file-icon">💿</span>
+                            <span class="file-name">D:\\</span>
+                        </div>
+                    </div>
+                `
+            });
+
+            // Add click handlers for navigable items
+            setTimeout(() => {
+                const documentsItem = document.querySelector('.file-item[data-target="documents"]');
+                const gamesItem = document.querySelector('.file-item[data-target="games"]');
+
+                if (documentsItem) {
+                    documentsItem.addEventListener('dblclick', () => {
+                        WindowManager.launchApp('documents');
+                    });
+                }
+
+                if (gamesItem) {
+                    gamesItem.addEventListener('dblclick', () => {
+                        launchGamesFolder();
+                    });
+                }
+            }, 100);
+        }
+    });
+
+    // =====================
+    // DOCUMENTS
+    // =====================
+    WindowManager.registerApp({
+        id: 'documents',
+        title: 'Documents',
+        icon: '📁',
+        launch() {
+            WindowManager.createWindow({
+                title: 'C:\\Documents',
+                icon: '📁',
+                width: 450,
+                height: 300,
+                content: `
+                    <div class="documents-view">
+                        <p>You have no documents yet.</p>
+                        <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                            (This folder is empty)
+                        </p>
+                    </div>
+                `
+            });
+        }
+    });
+
+    // =====================
+    // GAMES FOLDER
+    // =====================
+    function launchGamesFolder() {
+        WindowManager.createWindow({
+            title: 'C:\\Games',
+            icon: '🎮',
+            width: 500,
+            height: 400,
+            content: `
+                <div class="file-browser">
+                    <div class="file-item" data-game="tetris">
+                        <span class="file-icon">🎮</span>
+                        <span class="file-name">Tetris.exe</span>
+                    </div>
+                    <div class="file-item" data-game="solitaire">
+                        <span class="file-icon">🃏</span>
+                        <span class="file-name">Solitaire.exe</span>
+                    </div>
+                    <div class="file-item" data-game="minesweeper">
+                        <span class="file-icon">💣</span>
+                        <span class="file-name">Minesweeper.exe</span>
+                    </div>
+                </div>
+            `
+        });
+
+        // Add click handlers for games
+        setTimeout(() => {
+            document.querySelectorAll('.file-item[data-game]').forEach(item => {
+                item.addEventListener('dblclick', () => {
+                    const game = item.getAttribute('data-game');
+                    WindowManager.launchApp(game);
+                });
+            });
+        }, 100);
+    }
+
+    // =====================
+    // SOLITAIRE
+    // =====================
+    WindowManager.registerApp({
+        id: 'solitaire',
+        title: 'Solitaire',
+        icon: '🃏',
+        launch() {
+            const cards = ['A♠', '2♥', '3♦', '4♣', '5♠', '6♥', '7♦', '8♣', '9♠', '10♥', 'J♦', 'Q♣', 'K♠'];
+            const cardColors = ['black', 'red', 'red', 'black', 'black', 'red', 'red', 'black', 'black', 'red', 'red', 'black', 'black'];
+
+            let cardHTML = '';
+            cards.forEach((card, index) => {
+                const color = cardColors[index];
+                cardHTML += `<div class="card ${color}">${card}</div>`;
+            });
+
+            WindowManager.createWindow({
+                title: 'Solitaire',
+                icon: '🃏',
+                width: 700,
+                height: 500,
+                content: `
+                    <div class="solitaire-game">
+                        ${cardHTML}
+                        <div class="card face-down"></div>
+                        <div class="card face-down"></div>
+                        <div class="card face-down"></div>
+                    </div>
+                `
+            });
+
+            // Add card click handlers
+            setTimeout(() => {
+                const cardElements = document.querySelectorAll('.solitaire-game .card');
+                cardElements.forEach(card => {
+                    card.addEventListener('click', () => {
+                        if (card.classList.contains('face-down')) {
+                            card.classList.remove('face-down');
+                            const suits = ['♠', '♥', '♦', '♣'];
+                            const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+                            const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+                            const randomValue = values[Math.floor(Math.random() * values.length)];
+                            card.textContent = randomValue + randomSuit;
+                            card.classList.add((randomSuit === '♥' || randomSuit === '♦') ? 'red' : 'black');
+                        }
+                    });
+                });
+            }, 100);
+        }
+    });
+
+    // =====================
+    // TETRIS
+    // =====================
+    WindowManager.registerApp({
+        id: 'tetris',
+        title: 'Tetris',
+        icon: '🎮',
+        launch() {
+            const canvasId = 'tetris-canvas-' + Date.now();
+            const win = WindowManager.createWindow({
+                title: 'TETRIS',
+                icon: '🎮',
+                width: 360,
+                height: 660,
+                content: `
+                    <div class="tetris-game" style="background: #000; padding: 10px;">
+                        <canvas id="${canvasId}" width="300" height="600"></canvas>
+                    </div>
+                `
+            });
+
+            // Start game after canvas is ready
+            setTimeout(() => {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                const COLS = 10;
+                const ROWS = 20;
+                const BLOCK_SIZE = 30;
+                const WIDTH = COLS * BLOCK_SIZE;
+                const HEIGHT = ROWS * BLOCK_SIZE;
+
+                // Game state
+                let score = 0;
+                let level = 1;
+                let lines = 0;
+                let highScore = localStorage.getItem('tetrisHighScore') || 0;
+                let gameOver = false;
+                let paused = false;
+
+                // Tetromino shapes
+                const SHAPES = {
+                    I: [[1,1,1,1]],
+                    O: [[1,1],[1,1]],
+                    T: [[0,1,0],[1,1,1]],
+                    S: [[0,1,1],[1,1,0]],
+                    Z: [[1,1,0],[0,1,1]],
+                    J: [[1,0,0],[1,1,1]],
+                    L: [[0,0,1],[1,1,1]]
+                };
+
+                const COLORS = {
+                    I: '#00ffff',
+                    O: '#ffff00',
+                    T: '#ff00ff',
+                    S: '#00ff00',
+                    Z: '#ff0000',
+                    J: '#0000ff',
+                    L: '#ff8800'
+                };
+
+                // Game board
+                const board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+
+                // Current piece
+                let currentPiece = null;
+                let currentX = 0;
+                let currentY = 0;
+
+                // Next piece
+                let nextPiece = null;
+
+                // Timing
+                let dropCounter = 0;
+                let dropInterval = 1000;
+                let lastTime = 0;
+
+                // Get random piece
+                function randomPiece() {
+                    const pieces = 'IOJLSZT';
+                    const type = pieces[Math.floor(Math.random() * pieces.length)];
+                    return {
+                        type: type,
+                        shape: SHAPES[type],
+                        color: COLORS[type]
+                    };
+                }
+
+                // Create new piece
+                function newPiece() {
+                    if (!nextPiece) {
+                        nextPiece = randomPiece();
+                    }
+                    currentPiece = nextPiece;
+                    nextPiece = randomPiece();
+                    currentX = Math.floor(COLS / 2) - Math.floor(currentPiece.shape[0].length / 2);
+                    currentY = 0;
+
+                    if (collides()) {
+                        gameOver = true;
+                    }
+                }
+
+                // Check collision
+                function collides(offsetX = 0, offsetY = 0, newShape = currentPiece.shape) {
+                    for (let y = 0; y < newShape.length; y++) {
+                        for (let x = 0; x < newShape[y].length; x++) {
+                            if (newShape[y][x]) {
+                                const newX = currentX + x + offsetX;
+                                const newY = currentY + y + offsetY;
+
+                                if (newX < 0 || newX >= COLS || newY >= ROWS) {
+                                    return true;
+                                }
+
+                                if (newY >= 0 && board[newY][newX]) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                }
+
+                // Rotate piece
+                function rotate() {
+                    const newShape = currentPiece.shape[0].map((_, i) =>
+                        currentPiece.shape.map(row => row[i]).reverse()
+                    );
+
+                    if (!collides(0, 0, newShape)) {
+                        currentPiece.shape = newShape;
+                    }
+                }
+
+                // Merge piece to board
+                function merge() {
+                    currentPiece.shape.forEach((row, y) => {
+                        row.forEach((value, x) => {
+                            if (value) {
+                                board[currentY + y][currentX + x] = currentPiece.color;
+                            }
+                        });
+                    });
+                }
+
+                // Clear completed lines
+                function clearLines() {
+                    let linesCleared = 0;
+
+                    for (let y = ROWS - 1; y >= 0; y--) {
+                        if (board[y].every(cell => cell !== 0)) {
+                            board.splice(y, 1);
+                            board.unshift(Array(COLS).fill(0));
+                            linesCleared++;
+                            y++; // Check same row again
+                        }
+                    }
+
+                    if (linesCleared > 0) {
+                        lines += linesCleared;
+                        score += linesCleared * 100 * level;
+                        level = Math.floor(lines / 10) + 1;
+                        dropInterval = Math.max(100, 1000 - (level * 50));
+
+                        if (score > highScore) {
+                            highScore = score;
+                            localStorage.setItem('tetrisHighScore', highScore);
+                        }
+                    }
+                }
+
+                // Move piece down
+                function drop() {
+                    if (!collides(0, 1)) {
+                        currentY++;
+                    } else {
+                        merge();
+                        clearLines();
+                        newPiece();
+                    }
+                }
+
+                // Hard drop
+                function hardDrop() {
+                    while (!collides(0, 1)) {
+                        currentY++;
+                    }
+                    drop();
+                }
+
+                // Drawing functions
+                function drawBlock(x, y, color) {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+
+                    // 3D bevel effect
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x * BLOCK_SIZE, y * BLOCK_SIZE + BLOCK_SIZE);
+                    ctx.lineTo(x * BLOCK_SIZE, y * BLOCK_SIZE);
+                    ctx.lineTo(x * BLOCK_SIZE + BLOCK_SIZE, y * BLOCK_SIZE);
+                    ctx.stroke();
+
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(x * BLOCK_SIZE + BLOCK_SIZE, y * BLOCK_SIZE);
+                    ctx.lineTo(x * BLOCK_SIZE + BLOCK_SIZE, y * BLOCK_SIZE + BLOCK_SIZE);
+                    ctx.lineTo(x * BLOCK_SIZE, y * BLOCK_SIZE + BLOCK_SIZE);
+                    ctx.stroke();
+                }
+
+                function drawBoard() {
+                    // Clear canvas
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw locked blocks
+                    for (let y = 0; y < ROWS; y++) {
+                        for (let x = 0; x < COLS; x++) {
+                            if (board[y][x]) {
+                                drawBlock(x, y, board[y][x]);
+                            }
+                        }
+                    }
+
+                    // Draw grid
+                    ctx.strokeStyle = '#222';
+                    ctx.lineWidth = 1;
+                    for (let x = 0; x <= COLS; x++) {
+                        ctx.beginPath();
+                        ctx.moveTo(x * BLOCK_SIZE, 0);
+                        ctx.lineTo(x * BLOCK_SIZE, ROWS * BLOCK_SIZE);
+                        ctx.stroke();
+                    }
+                    for (let y = 0; y <= ROWS; y++) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, y * BLOCK_SIZE);
+                        ctx.lineTo(COLS * BLOCK_SIZE, y * BLOCK_SIZE);
+                        ctx.stroke();
+                    }
+                }
+
+                function drawPiece() {
+                    if (!currentPiece) return;
+                    const shape = currentPiece.shape;
+                    const color = currentPiece.color;
+                    for (let y = 0; y < shape.length; y++) {
+                        for (let x = 0; x < shape[y].length; x++) {
+                            if (shape[y][x]) {
+                                drawBlock(currentX + x, currentY + y, color);
+                            }
+                        }
+                    }
+                }
+
+                function drawUI() {
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 16px "Courier New", monospace';
+                    ctx.fillText('SCORE: ' + score, 10, canvas.height - 70);
+                    ctx.fillText('LEVEL: ' + level, 10, canvas.height - 50);
+                    ctx.fillText('LINES: ' + lines, 10, canvas.height - 30);
+                    ctx.fillText('NEXT:', 10, canvas.height - 10);
+                }
+
+                function drawGameOver() {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    ctx.fillRect(0, 200, canvas.width, 100);
+
+                    ctx.fillStyle = '#f00';
+                    ctx.font = 'bold 32px "Courier New", monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('GAME OVER', canvas.width / 2, 250);
+
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '14px "Courier New", monospace';
+                    ctx.fillText('Press R to restart', canvas.width / 2, 280);
+                    ctx.textAlign = 'left';
+                }
+
+                // Game loop
+                function update(time = 0) {
+                    if (gameOver || paused) {
+                        if (gameOver) {
+                            drawBoard();
+                            drawPiece();
+                            drawUI();
+                            drawGameOver();
+                        }
+                        requestAnimationFrame(update);
+                        return;
+                    }
+
+                    const deltaTime = time - lastTime;
+                    lastTime = time;
+                    dropCounter += deltaTime;
+
+                    if (dropCounter > dropInterval) {
+                        drop();
+                        dropCounter = 0;
+                    }
+
+                    drawBoard();
+                    drawPiece();
+                    drawUI();
+
+                    requestAnimationFrame(update);
+                }
+
+                // Keyboard controls
+                const keyHandler = (e) => {
+                    if (e.type !== 'keydown') return;
+
+                    if (gameOver && e.code === 'KeyR') {
+                        // Restart game
+                        e.preventDefault();
+                        board.forEach((row, i) => {
+                            board[i] = Array(COLS).fill(0);
+                        });
+                        score = 0;
+                        lines = 0;
+                        level = 1;
+                        gameOver = false;
+                        dropInterval = 1000;
+                        newPiece();
+                        update();
+                        return;
+                    }
+
+                    if (gameOver || paused) {
+                        if (e.code === 'KeyP') {
+                            e.preventDefault();
+                            paused = !paused;
+                            if (!paused) update();
+                        }
+                        return;
+                    }
+
+                    switch (e.code) {
+                        case 'ArrowLeft':
+                            e.preventDefault();
+                            if (!collides(-1, 0)) currentX--;
+                            break;
+                        case 'ArrowRight':
+                            e.preventDefault();
+                            if (!collides(1, 0)) currentX++;
+                            break;
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            drop();
+                            break;
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            rotate();
+                            break;
+                        case 'Space':
+                            e.preventDefault();
+                            hardDrop();
+                            break;
+                        case 'KeyP':
+                            e.preventDefault();
+                            paused = !paused;
+                            if (!paused) update();
+                            break;
+                    }
+                };
+
+                document.addEventListener('keydown', keyHandler);
+
+                // Clean up on window close
+                win.config.onClose = () => {
+                    document.removeEventListener('keydown', keyHandler);
+                };
+
+                // Start game
+                newPiece();
+                update();
+            }, 100);
+        }
+    });
+
+    // =====================
+    // MINESWEEPER
+    // =====================
+    WindowManager.registerApp({
+        id: 'minesweeper',
+
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Glow effect
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ffff00';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                function drawBumpers() {
+                    bumpers.forEach(bumper => {
+                        // Only show bumpers for current and previous levels
+                        if (bumper.level > currentLevel) return;
+
+                        // Flash effect
+                        if (bumper.flash > 0) {
+                            bumper.flash--;
+                        }
+
+                        const color = bumper.flash > 0 ? '#ffffff' : bumper.color;
+
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        ctx.arc(bumper.x, bumper.y, bumper.radius, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Border
+                        ctx.strokeStyle = '#ffd93d';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+
+                        // Glow
+                        if (bumper.flash > 0) {
+                            ctx.shadowBlur = 20;
+                            ctx.shadowColor = color;
+                            ctx.stroke();
+                            ctx.shadowBlur = 0;
+                        }
+
+                        // Points label
+                        ctx.fillStyle = '#000';
+                        ctx.font = 'bold 12px "Courier New"';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        if (bumper.level === 3) {
+                            ctx.fillText('★' + bumper.points, bumper.x, bumper.y);
+                        } else {
+                            ctx.fillText(bumper.points, bumper.x, bumper.y);
+                        }
+                        ctx.textAlign = 'start';
+                        ctx.textBaseline = 'alphabetic';
+                    });
+                }
+
+                function drawFlippers() {
+                    // Update flipper angles
+                    if (leftFlipper.active) {
+                        leftFlipper.angle = Math.max(-0.2, leftFlipper.angle - 0.15);
+                    } else {
+                        leftFlipper.angle = Math.min(0.4, leftFlipper.angle + 0.08);
+                    }
+
+                    if (rightFlipper.active) {
+                        rightFlipper.angle = Math.min(0.2, rightFlipper.angle + 0.15);
+                    } else {
+                        rightFlipper.angle = Math.max(-0.4, rightFlipper.angle - 0.08);
+                    }
+
+                    // Draw left flipper
+                    ctx.save();
+                    ctx.translate(leftFlipper.x, leftFlipper.y);
+                    ctx.rotate(leftFlipper.angle);
+                    ctx.fillStyle = '#cccccc';
+                    ctx.fillRect(0, -leftFlipper.height / 2, leftFlipper.width, leftFlipper.height);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(0, -leftFlipper.height / 2, leftFlipper.width, leftFlipper.height);
+                    ctx.restore();
+
+                    // Draw right flipper
+                    ctx.save();
+                    ctx.translate(rightFlipper.x, rightFlipper.y);
+                    ctx.rotate(rightFlipper.angle);
+                    ctx.fillStyle = '#cccccc';
+                    ctx.fillRect(-rightFlipper.width, -rightFlipper.height / 2, rightFlipper.width, rightFlipper.height);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(-rightFlipper.width, -rightFlipper.height / 2, rightFlipper.width, rightFlipper.height);
+                    ctx.restore();
+                }
+
+                function drawGameOver() {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    ctx.fillRect(0, HEIGHT / 2 - 80, WIDTH, 160);
+
+                    ctx.fillStyle = '#ff3366';
+                    ctx.font = 'bold 48px "Courier New"';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('GAME OVER', WIDTH / 2, HEIGHT / 2 - 20);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 20px "Courier New"';
+                    ctx.fillText(`Final Score: ${score}`, WIDTH / 2, HEIGHT / 2 + 20);
+                    ctx.fillText('Press R to Restart', WIDTH / 2, HEIGHT / 2 + 50);
+                    ctx.textAlign = 'start';
+                }
+
+                // Physics and collisions
+                function updateBall() {
+                    if (!ball.launched || isGameOver) return;
+
+                    // Apply gravity
+                    ball.vy += gravity;
+
+                    // Apply friction
+                    ball.vx *= friction;
+
+                    // Update position
+                    ball.x += ball.vx;
+                    ball.y += ball.vy;
+
+                    // Wall collisions
+                    if (ball.x - ball.radius < 0) {
+                        ball.x = ball.radius;
+                        ball.vx = -ball.vx * 0.7;
+                        playBeep(200, 0.05);
+                    }
+                    if (ball.x + ball.radius > WIDTH) {
+                        ball.x = WIDTH - ball.radius;
+                        ball.vx = -ball.vx * 0.7;
+                        playBeep(200, 0.05);
+                    }
+                    if (ball.y - ball.radius < 0) {
+                        ball.y = ball.radius;
+                        ball.vy = -ball.vy * 0.6;
+                        playBeep(200, 0.05);
+                    }
+
+                    // Bumper collisions
+                    bumpers.forEach(bumper => {
+                        if (bumper.level > currentLevel) return;
+
+                        const dx = ball.x - bumper.x;
+                        const dy = ball.y - bumper.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < ball.radius + bumper.radius) {
+                            // Bounce
+                            const angle = Math.atan2(dy, dx);
+                            const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) * 1.4;
+                            ball.vx = Math.cos(angle) * speed;
+                            ball.vy = Math.sin(angle) * speed;
+
+                            // Move ball outside bumper
+                            const overlap = ball.radius + bumper.radius - distance;
+                            ball.x += Math.cos(angle) * overlap;
+                            ball.y += Math.sin(angle) * overlap;
+
+                            // Score
+                            score += bumper.points;
+                            if (score > highScore) {
+                                highScore = score;
+                                localStorage.setItem('pinballHighScore', highScore);
+                            }
+
+                            // Flash effect
+                            bumper.flash = 10;
+
+                            // Sound
+                            playBeep(400 + bumper.points, 0.1);
+
+                            // Level up
+                            if (score >= 1000 && currentLevel === 1) {
+                                currentLevel = 2;
+                                playBeep(800, 0.3);
+                            }
+                            if (score >= 3000 && currentLevel === 2) {
+                                currentLevel = 3;
+                                playBeep(1000, 0.3);
+                            }
+                        }
+                    });
+
+                    // Flipper collisions
+                    checkFlipperCollision(leftFlipper);
+                    checkFlipperCollision(rightFlipper);
+
+                    // Barrier collisions
+                    // Left barrier - simple slope check
+                    if (ball.x < 100 && ball.y > HEIGHT - 80) {
+                        const barrierY = HEIGHT - 60 + (ball.x / 100) * 40;
+                        if (ball.y + ball.radius > barrierY) {
+                            ball.y = barrierY - ball.radius;
+                            ball.vy = -Math.abs(ball.vy) * 0.5;
+                            ball.vx = Math.abs(ball.vx) * 0.7;
+                        }
+                    }
+
+                    // Right barrier collision with plunger lane
+                    if (ball.x > WIDTH - 60 && ball.y > HEIGHT - 120) {
+                        ball.x = WIDTH - 60 - ball.radius;
+                        ball.vx = -Math.abs(ball.vx) * 0.7;
+                    }
+
+                    // Ball fell through gap (between flippers)
+                    if (ball.y > HEIGHT + 20 && ball.x > 100 && ball.x < WIDTH - 60) {
+                        ballsLeft--;
+                        playBeep(100, 0.5);
+
+                        if (ballsLeft > 0) {
+                            resetBall();
+                        } else {
+                            isGameOver = true;
+                        }
+                    }
+                }
+
+                function checkFlipperCollision(flipper) {
+                    // Simple AABB collision for flippers
+                    const isLeft = flipper === leftFlipper;
+                    const flipperLeft = isLeft ? flipper.x : flipper.x - flipper.width;
+                    const flipperRight = isLeft ? flipper.x + flipper.width : flipper.x;
+                    const flipperTop = flipper.y - flipper.height / 2;
+                    const flipperBottom = flipper.y + flipper.height / 2;
+
+                    if (ball.x + ball.radius > flipperLeft &&
+                        ball.x - ball.radius < flipperRight &&
+                        ball.y + ball.radius > flipperTop &&
+                        ball.y - ball.radius < flipperBottom) {
+
+                        if (flipper.active) {
+                            // Strong hit when active
+                            ball.vy = -14;
+                            ball.vx = isLeft ? -8 : 8;
+                            playBeep(300, 0.1);
+                        } else {
+                            // Gentle bounce when inactive
+                            ball.vy = -Math.abs(ball.vy) * 0.4;
+                        }
+
+                        ball.y = flipperTop - ball.radius;
+                    }
+                }
+
+                function resetBall() {
+                    ball.x = WIDTH - 30;
+                    ball.y = HEIGHT - 50;
+                    ball.vx = 0;
+                    ball.vy = 0;
+                    ball.launched = false;
+                }
+
+                function launchBall() {
+                    if (!ball.launched && !isGameOver) {
+                        ball.launched = true;
+                        ball.vx = (Math.random() - 0.5) * 4;
+                        ball.vy = -16;
+                        playBeep(500, 0.2);
+                    }
+                }
+
+                function restartGame() {
+                    score = 0;
+                    ballsLeft = 3;
+                    currentLevel = 1;
+                    isGameOver = false;
+                    resetBall();
+                }
+
+                // Game loop
+                function gameLoop() {
+                    if (!canvas.parentElement) return; // Stop if window closed
+
+                    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+                    drawTable();
+                    drawBumpers();
+                    drawFlippers();
+                    drawBall();
+                    drawScore();
+
+                    if (isGameOver) {
+                        drawGameOver();
+                    }
+
+                    updateBall();
+
+                    requestAnimationFrame(gameLoop);
+                }
+
+                // Keyboard controls
+                const keyHandler = (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        launchBall();
+                    } else if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+                        e.preventDefault();
+                        leftFlipper.active = e.type === 'keydown';
+                    } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+                        e.preventDefault();
+                        rightFlipper.active = e.type === 'keydown';
+                    } else if (e.code === 'KeyR' && isGameOver) {
+                        e.preventDefault();
+                        restartGame();
+                    }
+                };
+
+                document.addEventListener('keydown', keyHandler);
+                document.addEventListener('keyup', keyHandler);
+
+                // Clean up on window close
+                win.config.onClose = () => {
+                    document.removeEventListener('keydown', keyHandler);
+                    document.removeEventListener('keyup', keyHandler);
+                };
+
+                // Start game
+                gameLoop();
+            }, 100);
+        }
+    });
+
+    // =====================
+    // MINESWEEPER
+    // =====================
+    WindowManager.registerApp({
+        id: 'minesweeper',
+        title: 'Minesweeper',
+        icon: '💣',
+        launch() {
+            const gridSize = 10;
+            const mineCount = 15;
+
+            // Initialize grid
+            const grid = [];
+            const mines = new Set();
+
+            // Place mines randomly
+            while (mines.size < mineCount) {
+                const pos = Math.floor(Math.random() * (gridSize * gridSize));
+                mines.add(pos);
+            }
+
+            // Create grid with mine counts
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                const row = Math.floor(i / gridSize);
+                const col = i % gridSize;
+
+                if (mines.has(i)) {
+                    grid[i] = { mine: true, revealed: false, flagged: false };
+                } else {
+                    // Count adjacent mines
+                    let count = 0;
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            const nr = row + dr;
+                            const nc = col + dc;
+                            const ni = nr * gridSize + nc;
+                            if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize && mines.has(ni)) {
+                                count++;
+                            }
+                        }
+                    }
+                    grid[i] = { mine: false, count: count, revealed: false, flagged: false };
+                }
+            }
+
+            // Generate HTML
+            let cellsHTML = '';
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                cellsHTML += `<div class="mine-cell" data-index="${i}"></div>`;
+            }
+
+            const win = WindowManager.createWindow({
+                title: 'Minesweeper',
+                icon: '💣',
+                width: 300,
+                height: 400,
+                content: `
+                    <div class="minesweeper-game">
+                        <div class="minesweeper-header">
+                            <div class="mine-counter">${String(mineCount).padStart(3, '0')}</div>
+                            <button class="reset-button">🙂</button>
+                            <div class="mine-timer">000</div>
+                        </div>
+                        <div class="minesweeper-grid" style="grid-template-columns: repeat(${gridSize}, 25px);">
+                            ${cellsHTML}
+                        </div>
+                    </div>
+                `
+            });
+
+            // Add game logic
+            setTimeout(() => {
+                const cells = document.querySelectorAll('.mine-cell');
+                const resetButton = document.querySelector('.reset-button');
+                const mineCounter = document.querySelector('.mine-counter');
+                let flagCount = 0;
+                let gameOver = false;
+
+                // Reveal cell function
+                function revealCell(index) {
+                    if (gameOver || grid[index].revealed || grid[index].flagged) return;
+
+                    grid[index].revealed = true;
+                    cells[index].classList.add('revealed');
+
+                    if (grid[index].mine) {
+                        // Game over - hit a mine
+                        cells[index].classList.add('mine');
+                        gameOver = true;
+                        if (resetButton) resetButton.textContent = '😵';
+
+                        // Reveal all mines
+                        grid.forEach((cell, i) => {
+                            if (cell.mine) {
+                                cells[i].classList.add('mine');
+                            }
+                        });
+                    } else {
+                        // Show count
+                        if (grid[index].count > 0) {
+                            cells[index].textContent = grid[index].count;
+                            cells[index].setAttribute('data-count', grid[index].count);
+                        } else {
+                            // Auto-reveal adjacent cells if count is 0
+                            const row = Math.floor(index / gridSize);
+                            const col = index % gridSize;
+                            for (let dr = -1; dr <= 1; dr++) {
+                                for (let dc = -1; dc <= 1; dc++) {
+                                    const nr = row + dr;
+                                    const nc = col + dc;
+                                    const ni = nr * gridSize + nc;
+                                    if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
+                                        setTimeout(() => revealCell(ni), 10);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Cell click handlers
+                cells.forEach((cell, index) => {
+                    // Left click - reveal
+                    cell.addEventListener('click', () => {
+                        if (!gameOver) {
+                            revealCell(index);
+                        }
+                    });
+
+                    // Right click - flag
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        if (!gameOver && !grid[index].revealed) {
+                            grid[index].flagged = !grid[index].flagged;
+                            cell.classList.toggle('flagged');
+
+                            flagCount += grid[index].flagged ? 1 : -1;
+                            if (mineCounter) {
+                                mineCounter.textContent = String(mineCount - flagCount).padStart(3, '0');
+                            }
+                        }
+                    });
+                });
+
+                // Reset button
+                if (resetButton) {
+                    resetButton.addEventListener('click', () => {
+                        WindowManager.closeWindow(win);
+                        WindowManager.launchApp('minesweeper');
+                    });
+                }
+            }, 100);
+        }
+    });
+
+    // =====================
+    // CONTROL PANEL
+    // =====================
+    WindowManager.registerApp({
+        id: 'controlpanel',
+        title: 'Control Panel',
+        icon: '⚙️',
+        launch() {
+            alert('I have control over you');
+        }
+    });
+}

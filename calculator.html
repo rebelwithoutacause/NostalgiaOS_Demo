@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            overflow: auto;
+        }
+
+        .calculator-container {
+            background: #1a1a1a;
+            border: 3px solid #00ff00;
+            box-shadow:
+                0 0 20px rgba(0, 255, 0, 0.3),
+                inset 0 0 40px rgba(0, 255, 0, 0.05);
+            padding: 20px;
+            border-radius: 5px;
+            width: 320px;
+            animation: flicker-container 0.1s infinite alternate;
+        }
+
+        @keyframes flicker-container {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.98; }
+        }
+
+        .calculator-header {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .calculator-title {
+            color: #00ff00;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #00ff00;
+            animation: text-flicker 0.15s infinite alternate;
+        }
+
+        @keyframes text-flicker {
+            0%, 100% { opacity: 1; text-shadow: 0 0 10px #00ff00; }
+            50% { opacity: 0.95; text-shadow: 0 0 8px #00ff00; }
+        }
+
+        .calculator-screen {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 20px 15px;
+            margin-bottom: 20px;
+            min-height: 80px;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                inset 0 0 20px rgba(0, 255, 0, 0.2),
+                0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .calculator-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                transparent 50%,
+                rgba(0, 255, 0, 0.03) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100%); }
+        }
+
+        .screen-expression {
+            color: #00ff00;
+            font-size: 16px;
+            min-height: 20px;
+            text-align: right;
+            opacity: 0.7;
+            text-shadow: 0 0 5px #00ff00;
+            margin-bottom: 5px;
+        }
+
+        .screen-result {
+            color: #00ff00;
+            font-size: 32px;
+            text-align: right;
+            text-shadow: 0 0 10px #00ff00;
+            word-break: break-all;
+            animation: glow-pulse 2s infinite alternate;
+        }
+
+        @keyframes glow-pulse {
+            0% { text-shadow: 0 0 10px #00ff00; }
+            100% { text-shadow: 0 0 15px #00ff00, 0 0 20px #00ff00; }
+        }
+
+        .calculator-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .calc-btn {
+            background: #000;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-size: 20px;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calc-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(0, 255, 0, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        .calc-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow:
+                0 0 15px rgba(0, 255, 0, 0.6),
+                inset 0 0 10px rgba(0, 255, 0, 0.2);
+            transform: scale(1.05);
+        }
+
+        .calc-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .calc-btn:active {
+            transform: scale(0.95);
+            box-shadow:
+                0 0 10px rgba(0, 255, 0, 0.8),
+                inset 0 0 15px rgba(0, 255, 0, 0.3);
+            animation: glitch-btn 0.1s;
+        }
+
+        @keyframes glitch-btn {
+            0%, 100% { transform: scale(0.95); }
+            25% { transform: scale(0.93) translate(-1px, 1px); }
+            75% { transform: scale(0.93) translate(1px, -1px); }
+        }
+
+        .calc-btn.operator {
+            background: #001100;
+            border-color: #00cc00;
+            color: #00cc00;
+        }
+
+        .calc-btn.equals {
+            grid-column: span 2;
+            background: #002200;
+            border-color: #00ff00;
+            font-weight: bold;
+        }
+
+        .calc-btn.clear {
+            background: #110000;
+            border-color: #ff0000;
+            color: #ff0000;
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+        }
+
+        .calc-btn.clear:hover {
+            background: rgba(255, 0, 0, 0.1);
+            box-shadow:
+                0 0 15px rgba(255, 0, 0, 0.6),
+                inset 0 0 10px rgba(255, 0, 0, 0.2);
+        }
+
+        .calc-btn.backspace {
+            background: #110000;
+            border-color: #ff6600;
+            color: #ff6600;
+            box-shadow: 0 0 5px rgba(255, 102, 0, 0.3);
+        }
+
+        .calc-btn.backspace:hover {
+            background: rgba(255, 102, 0, 0.1);
+            box-shadow:
+                0 0 15px rgba(255, 102, 0, 0.6),
+                inset 0 0 10px rgba(255, 102, 0, 0.2);
+        }
+
+        /* Screen shake effect on error */
+        @keyframes screen-shake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-2px, 2px); }
+            50% { transform: translate(2px, -2px); }
+            75% { transform: translate(-2px, -2px); }
+        }
+
+        .error-shake {
+            animation: screen-shake 0.2s;
+        }
+
+        /* VHS tracking lines */
+        .calculator-screen::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1),
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+        }
+
+        .error-text {
+            color: #ff0000 !important;
+            text-shadow: 0 0 10px #ff0000 !important;
+            animation: error-blink 0.5s infinite;
+        }
+
+        @keyframes error-blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <div class="calculator-title">RETRO CALCULATOR v1.0</div>
+        </div>
+
+        <div class="calculator-screen" id="screen">
+            <div class="screen-expression" id="expression"></div>
+            <div class="screen-result" id="result">0</div>
+        </div>
+
+        <div class="calculator-buttons">
+            <button class="calc-btn clear" data-action="clear">C</button>
+            <button class="calc-btn backspace" data-action="backspace">⌫</button>
+            <button class="calc-btn operator" data-value="/">/</button>
+            <button class="calc-btn operator" data-value="*">*</button>
+
+            <button class="calc-btn" data-value="7">7</button>
+            <button class="calc-btn" data-value="8">8</button>
+            <button class="calc-btn" data-value="9">9</button>
+            <button class="calc-btn operator" data-value="-">-</button>
+
+            <button class="calc-btn" data-value="4">4</button>
+            <button class="calc-btn" data-value="5">5</button>
+            <button class="calc-btn" data-value="6">6</button>
+            <button class="calc-btn operator" data-value="+">+</button>
+
+            <button class="calc-btn" data-value="1">1</button>
+            <button class="calc-btn" data-value="2">2</button>
+            <button class="calc-btn" data-value="3">3</button>
+            <button class="calc-btn" data-value=".">.</button>
+
+            <button class="calc-btn" data-value="0">0</button>
+            <button class="calc-btn equals" data-action="equals">=</button>
+        </div>
+    </div>
+
+    <script>
+        class RetroCalculator {
+            constructor() {
+                this.expression = '';
+                this.result = '0';
+                this.lastResult = null;
+                this.justCalculated = false;
+
+                this.expressionEl = document.getElementById('expression');
+                this.resultEl = document.getElementById('result');
+                this.screenEl = document.getElementById('screen');
+
+                this.init();
+            }
+
+            init() {
+                // Button click handlers
+                document.querySelectorAll('.calc-btn').forEach(btn => {
+                    btn.addEventListener('click', () => this.handleButton(btn));
+                });
+
+                // Keyboard support
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+            }
+
+            handleButton(btn) {
+                const value = btn.getAttribute('data-value');
+                const action = btn.getAttribute('data-action');
+
+                if (value) {
+                    this.appendValue(value);
+                } else if (action === 'clear') {
+                    this.clear();
+                } else if (action === 'backspace') {
+                    this.backspace();
+                } else if (action === 'equals') {
+                    this.calculate();
+                }
+            }
+
+            handleKeyboard(e) {
+                // Numbers and operators
+                if (/[0-9+\-*\/.]/.test(e.key)) {
+                    e.preventDefault();
+                    this.appendValue(e.key);
+                }
+                // Enter key
+                else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.calculate();
+                }
+                // Backspace
+                else if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    this.backspace();
+                }
+                // Escape or Delete for clear
+                else if (e.key === 'Escape' || e.key === 'Delete') {
+                    e.preventDefault();
+                    this.clear();
+                }
+            }
+
+            appendValue(value) {
+                // If just calculated, start fresh with number or continue with operator
+                if (this.justCalculated) {
+                    if (/[+\-*\/]/.test(value)) {
+                        this.expression = this.result + value;
+                        this.result = '0';
+                    } else {
+                        this.expression = value;
+                        this.result = value;
+                    }
+                    this.justCalculated = false;
+                } else {
+                    // Prevent multiple decimal points in one number
+                    if (value === '.') {
+                        const parts = this.expression.split(/[+\-*\/]/);
+                        const lastNumber = parts[parts.length - 1];
+                        if (lastNumber.includes('.')) return;
+                    }
+
+                    // Prevent multiple operators in a row
+                    if (/[+\-*\/]/.test(value)) {
+                        const lastChar = this.expression.slice(-1);
+                        if (/[+\-*\/]/.test(lastChar)) {
+                            this.expression = this.expression.slice(0, -1) + value;
+                            this.updateDisplay();
+                            return;
+                        }
+                    }
+
+                    this.expression += value;
+
+                    // Update result display for numbers
+                    if (!/[+\-*\/]/.test(value)) {
+                        const parts = this.expression.split(/[+\-*\/]/);
+                        this.result = parts[parts.length - 1] || '0';
+                    }
+                }
+
+                this.updateDisplay();
+            }
+
+            backspace() {
+                if (this.justCalculated) {
+                    this.clear();
+                    return;
+                }
+
+                if (this.expression.length > 0) {
+                    this.expression = this.expression.slice(0, -1);
+
+                    if (this.expression === '') {
+                        this.result = '0';
+                    } else {
+                        const parts = this.expression.split(/[+\-*\/]/);
+                        this.result = parts[parts.length - 1] || '0';
+                    }
+
+                    this.updateDisplay();
+                }
+            }
+
+            clear() {
+                this.expression = '';
+                this.result = '0';
+                this.justCalculated = false;
+                this.resultEl.classList.remove('error-text');
+                this.updateDisplay();
+            }
+
+            calculate() {
+                if (this.expression === '') return;
+
+                try {
+                    // Security: validate expression contains only allowed characters
+                    if (!/^[0-9+\-*\/.()\s]+$/.test(this.expression)) {
+                        throw new Error('Invalid expression');
+                    }
+
+                    // Evaluate the expression
+                    const result = Function('"use strict"; return (' + this.expression + ')')();
+
+                    if (!isFinite(result)) {
+                        throw new Error('Math error');
+                    }
+
+                    // Round to avoid floating point errors
+                    this.result = String(Math.round(result * 100000000) / 100000000);
+                    this.lastResult = this.result;
+                    this.justCalculated = true;
+                    this.resultEl.classList.remove('error-text');
+
+                } catch (error) {
+                    this.result = 'ERROR';
+                    this.resultEl.classList.add('error-text');
+                    this.screenEl.classList.add('error-shake');
+                    setTimeout(() => {
+                        this.screenEl.classList.remove('error-shake');
+                    }, 200);
+                    this.justCalculated = true;
+                }
+
+                this.updateDisplay();
+            }
+
+            updateDisplay() {
+                this.expressionEl.textContent = this.expression || '';
+                this.resultEl.textContent = this.result;
+            }
+        }
+
+        // Initialize calculator
+        const calculator = new RetroCalculator();
+    </script>
+</body>
+</html>

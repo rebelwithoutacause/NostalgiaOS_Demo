@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test VHS Popup</title>
+    <style>
+        body { margin: 0; background: #008080; }
+        button { margin: 50px; padding: 20px; font-size: 18px; cursor: pointer; }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button onclick="testPopup()">Click to Test VHS Popup</button>
+
+    <!-- VHS Horror Popup -->
+    <div id="vhs-overlay">
+        <div class="glitch-tear"></div>
+    </div>
+
+    <div id="vhs-popup">
+        <div class="popup-header">
+            <div class="popup-icon">!</div>
+            <span>SYSTEM ERROR</span>
+        </div>
+        <div class="popup-content">
+            <div class="silhouette"></div>
+            <div class="message-text"></div>
+            <div class="error-message"></div>
+        </div>
+        <div class="popup-buttons">
+            <button class="popup-btn glitch-btn" id="retry-btn">RETRY</button>
+            <button class="popup-btn" id="disconnect-btn">DISCONNECT</button>
+        </div>
+    </div>
+
+    <div id="whisper-message">you should not have let it find you</div>
+
+    <script>
+        const messages = [
+            "THIS SYSTEM IS NO LONGER OFFLINE",
+            "SOMEONE IS USING YOUR SCREEN AS A GATEWAY",
+            "DO NOT MOVE",
+            "THE BLACK STATIC IS WATCHING."
+        ];
+
+        let currentMessage = 0;
+        let disconnectClicked = false;
+        let popupShown = false;
+
+        function testPopup() {
+            console.log('Button clicked!');
+            showVHSPopup();
+        }
+
+        function showVHSPopup() {
+            console.log('showVHSPopup called');
+            popupShown = true;
+
+            const overlay = document.getElementById('vhs-overlay');
+            const popup = document.getElementById('vhs-popup');
+
+            console.log('Overlay:', overlay);
+            console.log('Popup:', popup);
+
+            overlay.classList.add('active');
+
+            setTimeout(() => {
+                popup.classList.add('active');
+
+                setTimeout(() => {
+                    popup.classList.add('glitched');
+                    setTimeout(() => {
+                        showMessage(0);
+                    }, 500);
+                }, 800);
+            }, 1000);
+        }
+
+        function showMessage(index) {
+            if (index >= messages.length) return;
+
+            const messageEl = document.querySelector('.message-text');
+            const silhouette = document.querySelector('.silhouette');
+            messageEl.innerHTML = '';
+
+            const text = messages[index];
+            let charIndex = 0;
+
+            if (index === 2) {
+                setTimeout(() => {
+                    silhouette.classList.add('flash');
+                    setTimeout(() => {
+                        silhouette.classList.remove('flash');
+                    }, 100);
+                }, 300);
+            }
+
+            const charInterval = setInterval(() => {
+                if (charIndex < text.length) {
+                    const char = document.createElement('span');
+                    char.className = 'char';
+                    char.textContent = text[charIndex];
+                    char.style.animationDelay = '0s';
+                    messageEl.appendChild(char);
+                    charIndex++;
+                } else {
+                    clearInterval(charInterval);
+
+                    setTimeout(() => {
+                        if (index < messages.length - 1) {
+                            showMessage(index + 1);
+                        }
+                    }, 2000);
+                }
+            }, 50);
+
+            currentMessage = index;
+        }
+
+        document.getElementById('retry-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+        });
+
+        const disconnectBtn = document.getElementById('disconnect-btn');
+        disconnectBtn.addEventListener('click', function() {
+            if (disconnectClicked) return;
+            disconnectClicked = true;
+
+            this.classList.add('disabled');
+            this.textContent = 'DISCONNECTING...';
+
+            setTimeout(() => {
+                const errorMsg = document.querySelector('.error-message');
+                errorMsg.innerHTML = 'DISCONNECT FAILED<br>REASON: YOU WERE SEEN';
+                errorMsg.classList.add('show');
+
+                setTimeout(() => {
+                    closePopup();
+                }, 3000);
+            }, 5000);
+        });
+
+        function closePopup() {
+            const overlay = document.getElementById('vhs-overlay');
+            const popup = document.getElementById('vhs-popup');
+            const messageEl = document.querySelector('.message-text');
+            const errorMsg = document.querySelector('.error-message');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+
+            popup.classList.remove('active');
+
+            setTimeout(() => {
+                overlay.classList.remove('active');
+
+                setTimeout(() => {
+                    const whisper = document.getElementById('whisper-message');
+                    whisper.classList.add('show');
+
+                    setTimeout(() => {
+                        whisper.classList.remove('show');
+
+                        setTimeout(() => {
+                            popupShown = false;
+                            disconnectClicked = false;
+                            currentMessage = 0;
+
+                            popup.classList.remove('glitched');
+                            messageEl.innerHTML = '';
+                            errorMsg.classList.remove('show');
+                            errorMsg.innerHTML = '';
+                            disconnectBtn.classList.remove('disabled');
+                            disconnectBtn.textContent = 'DISCONNECT';
+                        }, 100);
+                    }, 2000);
+                }, 300);
+            }, 500);
+        }
+    </script>
+</body>
+</html>

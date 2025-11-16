@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nostalgic OS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Boot Screen -->
+    <div id="boot-screen">
+        <div class="boot-logo">Nostalgic OS</div>
+        <div class="boot-text">Starting Windows...</div>
+        <div class="boot-bar">
+            <div class="boot-progress"></div>
+        </div>
+    </div>
+
+    <!-- Desktop -->
+    <div id="desktop">
+        <!-- Desktop Icons -->
+        <div class="desktop-icon" data-app="mycomputer">
+            <div class="icon-image">💻</div>
+            <div class="icon-label">My Computer</div>
+        </div>
+
+        <div class="desktop-icon" data-app="documents">
+            <div class="icon-image">📁</div>
+            <div class="icon-label">Documents</div>
+        </div>
+
+        <div class="desktop-icon" data-app="browser">
+            <div class="icon-image">🌐</div>
+            <div class="icon-label">Internet Explorer</div>
+        </div>
+    </div>
+
+    <!-- Taskbar -->
+    <div id="taskbar">
+        <div class="taskbar-start">
+            <button class="start-button" id="start-button">
+                <span class="start-icon">🪟</span>
+                <span>Start</span>
+            </button>
+        </div>
+        <div id="taskbar-windows" class="taskbar-windows">
+            <!-- Window buttons will be added here dynamically -->
+        </div>
+        <div class="taskbar-tray">
+            <span id="clock">12:00</span>
+        </div>
+    </div>
+
+    <!-- Start Menu -->
+    <div id="start-menu" class="start-menu hidden">
+        <div class="start-menu-banner">Nostalgic <strong>OS</strong></div>
+        <div class="start-menu-items">
+            <div class="start-menu-item" data-app="mycomputer">
+                <span class="menu-icon">💻</span>
+                <span>My Computer</span>
+            </div>
+            <div class="start-menu-item" data-app="documents">
+                <span class="menu-icon">📁</span>
+                <span>Documents</span>
+            </div>
+            <div class="start-menu-item" data-app="browser">
+                <span class="menu-icon">🌐</span>
+                <span>Internet Explorer</span>
+            </div>
+            <div class="start-menu-item" data-app="calculator">
+                <span class="menu-icon">🔢</span>
+                <span>Calculator</span>
+            </div>
+            <div class="start-menu-item has-submenu" id="games-menu">
+                <span class="menu-icon">🎮</span>
+                <span>Games</span>
+                <span class="submenu-arrow">▶</span>
+            </div>
+            <div class="start-submenu hidden" id="games-submenu">
+                <div class="start-menu-item" data-app="tetris">
+                    <span class="menu-icon"><img src="tetris.png" alt="Tetris" style="width: 16px; height: 16px; vertical-align: middle;"></span>
+                    <span>Tetris</span>
+                </div>
+                <div class="start-menu-item" data-app="solitaire">
+                    <span class="menu-icon">🃏</span>
+                    <span>Solitaire</span>
+                </div>
+                <div class="start-menu-item" data-app="minesweeper">
+                    <span class="menu-icon">💣</span>
+                    <span>Minesweeper</span>
+                </div>
+            </div>
+            <div class="start-menu-separator"></div>
+            <div class="start-menu-item" data-app="controlpanel">
+                <span class="menu-icon">⚙️</span>
+                <span>Control Panel</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- VHS Horror Popup -->
+    <div id="vhs-overlay">
+        <div class="glitch-tear"></div>
+    </div>
+
+    <div id="vhs-popup">
+        <div class="popup-header">
+            <div class="popup-icon">!</div>
+            <span>SYSTEM ERROR</span>
+        </div>
+        <div class="popup-content">
+            <div class="silhouette"></div>
+            <div class="message-text"></div>
+            <div class="error-message"></div>
+        </div>
+        <div class="popup-buttons">
+            <button class="popup-btn glitch-btn" id="retry-btn">RETRY</button>
+            <button class="popup-btn" id="disconnect-btn">DISCONNECT</button>
+        </div>
+    </div>
+
+    <div id="whisper-message">you should not have let it find you</div>
+
+    <script src="wm.js"></script>
+    <script src="apps.js"></script>
+    <script>
+        // Initialize the desktop environment
+        document.addEventListener('DOMContentLoaded', () => {
+            // Boot animation
+            setTimeout(() => {
+                document.getElementById('boot-screen').classList.add('hidden');
+            }, 2000);
+
+            // Desktop icon double-click handler
+            document.querySelectorAll('.desktop-icon').forEach(icon => {
+                let clickCount = 0;
+                let clickTimer = null;
+
+                icon.addEventListener('click', () => {
+                    clickCount++;
+                    if (clickCount === 1) {
+                        clickTimer = setTimeout(() => {
+                            clickCount = 0;
+                        }, 300);
+                    } else if (clickCount === 2) {
+                        clearTimeout(clickTimer);
+                        clickCount = 0;
+                        const appId = icon.getAttribute('data-app');
+                        WindowManager.launchApp(appId);
+                    }
+                });
+            });
+
+            // Start button handler
+            const startButton = document.getElementById('start-button');
+            const startMenu = document.getElementById('start-menu');
+
+            startButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                WindowManager.toggleStartMenu();
+            });
+
+            // Games submenu handler
+            const gamesMenu = document.getElementById('games-menu');
+            const gamesSubmenu = document.getElementById('games-submenu');
+
+            gamesMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                gamesSubmenu.classList.toggle('hidden');
+            });
+
+            // Start menu item handlers
+            document.querySelectorAll('.start-menu-item[data-app]').forEach(item => {
+                item.addEventListener('click', () => {
+                    const appId = item.getAttribute('data-app');
+                    WindowManager.launchApp(appId);
+                    WindowManager.closeStartMenu();
+                });
+            });
+
+            // Click outside to close start menu
+            document.addEventListener('click', (e) => {
+                if (!startMenu.contains(e.target) && e.target !== startButton) {
+                    WindowManager.closeStartMenu();
+                }
+            });
+
+            // Update clock
+            function updateClock() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                document.getElementById('clock').textContent = `${hours}:${minutes}`;
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // Initialize all apps
+            initializeApps();
+
+            // ===== VHS HORROR POPUP SYSTEM =====
+            let idleTimer = null;
+            let popupShown = false;
+            const minIdle = 6 * 60 * 1000; // 6 minutes
+            const maxIdle = 13 * 60 * 1000; // 13 minutes
+            const randomIdle = Math.random() * (maxIdle - minIdle) + minIdle;
+
+            function resetIdle() {
+                if (popupShown) return;
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(() => {
+                    if (window.showVHSPopup) window.showVHSPopup();
+                }, randomIdle);
+            }
+
+            document.addEventListener('mousemove', resetIdle);
+            document.addEventListener('keypress', resetIdle);
+            resetIdle();
+
+            const messages = [
+                "THIS SYSTEM IS NO LONGER OFFLINE",
+                "SOMEONE IS USING YOUR SCREEN AS A GATEWAY",
+                "DO NOT MOVE",
+                "THE BLACK STATIC IS WATCHING."
+            ];
+
+            let currentMessage = 0;
+            let disconnectClicked = false;
+
+            // Make showVHSPopup globally accessible for Control Panel
+            window.showVHSPopup = function() {
+                console.log('showVHSPopup function called!');
+                console.log('popupShown before:', popupShown);
+
+                // Allow popup to show even if it was shown before
+                popupShown = true;
+
+                const overlay = document.getElementById('vhs-overlay');
+                const popup = document.getElementById('vhs-popup');
+
+                console.log('Overlay element:', overlay);
+                console.log('Popup element:', popup);
+
+                overlay.classList.add('active');
+
+                setTimeout(() => {
+                    popup.classList.add('active');
+
+                    setTimeout(() => {
+                        popup.classList.add('glitched');
+                        setTimeout(() => {
+                            showMessage(0);
+                        }, 500);
+                    }, 800);
+                }, 1000);
+            };
+
+            function showMessage(index) {
+                if (index >= messages.length) return;
+
+                const messageEl = document.querySelector('.message-text');
+                const silhouette = document.querySelector('.silhouette');
+                messageEl.innerHTML = '';
+
+                const text = messages[index];
+                let charIndex = 0;
+
+                if (index === 2) {
+                    setTimeout(() => {
+                        silhouette.classList.add('flash');
+                        setTimeout(() => {
+                            silhouette.classList.remove('flash');
+                        }, 100);
+                    }, 300);
+                }
+
+                const charInterval = setInterval(() => {
+                    if (charIndex < text.length) {
+                        const char = document.createElement('span');
+                        char.className = 'char';
+                        char.textContent = text[charIndex];
+                        char.style.animationDelay = '0s';
+                        messageEl.appendChild(char);
+                        charIndex++;
+                    } else {
+                        clearInterval(charInterval);
+
+                        setTimeout(() => {
+                            if (index < messages.length - 1) {
+                                showMessage(index + 1);
+                            }
+                        }, 2000);
+                    }
+                }, 50);
+
+                currentMessage = index;
+            }
+
+            document.getElementById('retry-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+            });
+
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            disconnectBtn.addEventListener('click', function() {
+                if (disconnectClicked) return;
+                disconnectClicked = true;
+
+                this.classList.add('disabled');
+                this.textContent = 'DISCONNECTING...';
+
+                setTimeout(() => {
+                    const errorMsg = document.querySelector('.error-message');
+                    errorMsg.innerHTML = 'DISCONNECT FAILED<br>REASON: YOU WERE SEEN';
+                    errorMsg.classList.add('show');
+
+                    setTimeout(() => {
+                        closePopup();
+                    }, 3000);
+                }, 5000);
+            });
+
+            function closePopup() {
+                const overlay = document.getElementById('vhs-overlay');
+                const popup = document.getElementById('vhs-popup');
+                const messageEl = document.querySelector('.message-text');
+                const errorMsg = document.querySelector('.error-message');
+                const disconnectBtn = document.getElementById('disconnect-btn');
+
+                popup.classList.remove('active');
+
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+
+                    setTimeout(() => {
+                        const whisper = document.getElementById('whisper-message');
+                        whisper.classList.add('show');
+
+                        setTimeout(() => {
+                            whisper.classList.remove('show');
+
+                            // Reset all popup state for next trigger
+                            setTimeout(() => {
+                                popupShown = false;
+                                disconnectClicked = false;
+                                currentMessage = 0;
+
+                                // Reset popup classes and content
+                                popup.classList.remove('glitched');
+                                messageEl.innerHTML = '';
+                                errorMsg.classList.remove('show');
+                                errorMsg.innerHTML = '';
+                                disconnectBtn.classList.remove('disabled');
+                                disconnectBtn.textContent = 'DISCONNECT';
+                            }, 100);
+                        }, 2000);
+                    }, 300);
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>

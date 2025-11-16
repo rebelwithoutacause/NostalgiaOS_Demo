@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Tetris</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #000; }
+        canvas { border: 4px solid #0f0; box-shadow: 0 0 20px #0f0; }
+    </style>
+</head>
+<body>
+    <canvas id="game" width="300" height="500"></canvas>
+    <div style="color: #0f0; font-family: monospace; margin-top: 10px;">
+        <div>Score: <span id="score">0</span></div>
+        <div>Level: <span id="level">1</span></div>
+        <div>Lines: <span id="lines">0</span></div>
+    </div>
+    <script>
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+
+        const COLS = 12;
+        const ROWS = 20;
+        const BLOCK = 25;
+
+        const PIECES = [
+            [[1,1,1,1]],
+            [[1,1],[1,1]],
+            [[0,1,0],[1,1,1]],
+            [[1,1,0],[0,1,1]],
+            [[0,1,1],[1,1,0]],
+            [[1,0,0],[1,1,1]],
+            [[0,0,1],[1,1,1]]
+        ];
+
+        const COLORS = ['#0ff', '#ff0', '#f0f', '#f00', '#0f0', '#00f', '#f80'];
+
+        let grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+        let piece, pieceX, pieceY, pieceColor;
+        let score = 0, level = 1, linesCleared = 0;
+        let gameOver = false;
+        let lastTime = 0, dropTime = 0, dropSpeed = 800;
+
+        function spawnPiece() {
+            const index = Math.floor(Math.random() * PIECES.length);
+            piece = PIECES[index].map(row => [...row]);
+            pieceColor = COLORS[index];
+            pieceX = Math.floor((COLS - piece[0].length) / 2);
+            pieceY = 0;
+
+            console.log('Spawned piece at', pieceX, pieceY, piece);
+
+            if (collision(0, 0)) {
+                gameOver = true;
+                console.log('Game over on spawn');
+            }
+        }
+
+        function collision(dx, dy, testPiece) {
+            const p = testPiece || piece;
+            for (let y = 0; y < p.length; y++) {
+                for (let x = 0; x < p[y].length; x++) {
+                    if (p[y][x]) {
+                        const newX = pieceX + x + dx;
+                        const newY = pieceY + y + dy;
+
+                        if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
+                        if (newY >= 0 && grid[newY][newX]) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function drawBlock(x, y, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x * BLOCK + 1, y * BLOCK + 1, BLOCK - 2, BLOCK - 2);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x * BLOCK + 1, y * BLOCK + 1, BLOCK - 2, BLOCK - 2);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Grid
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (grid[y][x]) {
+                        drawBlock(x, y, grid[y][x]);
+                    }
+                }
+            }
+
+            // Current piece
+            if (piece && !gameOver) {
+                for (let y = 0; y < piece.length; y++) {
+                    for (let x = 0; x < piece[y].length; x++) {
+                        if (piece[y][x]) {
+                            drawBlock(pieceX + x, pieceY + y, pieceColor);
+                        }
+                    }
+                }
+            }
+
+            if (gameOver) {
+                ctx.fillStyle = '#f00';
+                ctx.font = '48px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        function gameLoop(time = 0) {
+            const dt = time - lastTime;
+            lastTime = time;
+
+            if (!gameOver) {
+                dropTime += dt;
+                if (dropTime > dropSpeed) {
+                    if (!collision(0, 1)) {
+                        pieceY++;
+                    } else {
+                        // Lock piece
+                        for (let y = 0; y < piece.length; y++) {
+                            for (let x = 0; x < piece[y].length; x++) {
+                                if (piece[y][x] && pieceY + y >= 0) {
+                                    grid[pieceY + y][pieceX + x] = pieceColor;
+                                }
+                            }
+                        }
+                        spawnPiece();
+                    }
+                    dropTime = 0;
+                }
+            }
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (gameOver) return;
+
+            switch(e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    if (!collision(-1, 0)) pieceX--;
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    if (!collision(1, 0)) pieceX++;
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (!collision(0, 1)) pieceY++;
+                    break;
+            }
+            draw();
+        });
+
+        spawnPiece();
+        gameLoop();
+    </script>
+</body>
+</html>

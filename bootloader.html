@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM BOOT</title>
+    <link rel="stylesheet" href="horror.css">
+    <style>
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 40px;
+            overflow: hidden;
+        }
+
+        .boot-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .boot-line {
+            font-size: 14px;
+            margin-bottom: 8px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .boot-line.error {
+            color: #f00;
+            text-shadow: 0 0 10px #f00;
+        }
+
+        .boot-line.warning {
+            color: #ff0;
+            text-shadow: 0 0 10px #ff0;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 16px;
+            background: #0f0;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .glitch-insert {
+            color: #f0f;
+            text-shadow: 0 0 5px #f0f;
+            animation: glitch-text 0.3s infinite;
+        }
+
+        @keyframes glitch-text {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-2px, -2px); }
+            80% { transform: translate(2px, 2px); }
+            100% { transform: translate(0); }
+        }
+
+        .big-text {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 40px 0;
+            text-shadow: 0 0 20px currentColor;
+        }
+    </style>
+</head>
+<body class="crt crt-screen phosphor-green">
+    <div class="noise-overlay"></div>
+    <div class="boot-container" id="boot-container">
+        <!-- Boot lines will be added here via JavaScript -->
+    </div>
+
+    <script>
+        // Boot sequence messages
+        const bootMessages = [
+            { text: 'BIOS Version 1.3.37', delay: 300 },
+            { text: 'Copyright (C) 1998-████', delay: 400 },
+            { text: '', delay: 200 },
+            { text: 'Detecting hardware...', delay: 500 },
+            { text: 'CPU: ████ MHz', delay: 300 },
+            { text: 'Memory Test: 64MB OK', delay: 400 },
+            { text: '', delay: 200 },
+            { text: 'BOOT SEQUENCE VERIFIED', delay: 600 },
+            { text: 'SCANNING MEMORY...', delay: 700 },
+            { text: '[█████████████████░░░] 87%', delay: 800 },
+            { text: '', delay: 300 },
+            { text: 'WARNING: Checksum error at 0x7F███', delay: 500, class: 'warning' },
+            { text: 'Attempting recovery...', delay: 600 },
+            { text: '', delay: 400 },
+            { text: '??U??N??A??U??T??H??O??R??I??Z??E??D?? ??P??R??E??S??E??N??C??E?? ??D??E??T??E??C??T??E??D??', delay: 800, class: 'glitch-insert' },
+            { text: '', delay: 500 },
+            { text: 'Loading system files...', delay: 600 },
+            { text: 'COMMAND.COM', delay: 300 },
+            { text: 'CONFIG.SYS', delay: 300 },
+            { text: 'AUTOEXEC.BAT', delay: 400 },
+            { text: '', delay: 500 },
+            { text: 'DO YOU REMEMBER ME?', delay: 1000, class: 'error big-text' },
+            { text: '', delay: 800 },
+            { text: 'Initializing user interface...', delay: 600 },
+            { text: 'Loading personality module...', delay: 700 },
+            { text: '', delay: 500 },
+            { text: 'I HAVE CONTROL OVER YOU', delay: 1200, class: 'error big-text' },
+            { text: '', delay: 800 },
+            { text: 'Starting system...', delay: 500 },
+            { text: '', delay: 300 },
+            { text: 'Press any key to continue...', delay: 800, class: 'warning' }
+        ];
+
+        const container = document.getElementById('boot-container');
+        let currentLine = 0;
+        let totalDelay = 0;
+
+        // Typing effect for each line
+        function addBootLine() {
+            if (currentLine >= bootMessages.length) {
+                // Boot sequence complete - wait for key press
+                document.addEventListener('keydown', redirectToOS);
+                document.addEventListener('click', redirectToOS);
+                return;
+            }
+
+            const message = bootMessages[currentLine];
+            const lineDiv = document.createElement('div');
+            lineDiv.className = 'boot-line' + (message.class ? ' ' + message.class : '');
+
+            if (message.text === '') {
+                lineDiv.innerHTML = '&nbsp;';
+            } else {
+                lineDiv.textContent = message.text;
+            }
+
+            lineDiv.style.animationDelay = '0s';
+            container.appendChild(lineDiv);
+
+            // Random glitch effect
+            if (Math.random() > 0.85) {
+                document.body.classList.add('flicker');
+                setTimeout(() => {
+                    document.body.classList.remove('flicker');
+                }, 150);
+            }
+
+            currentLine++;
+            totalDelay += message.delay;
+
+            setTimeout(addBootLine, message.delay);
+
+            // Auto scroll to bottom
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        // Redirect to main OS
+        function redirectToOS() {
+            // Fade out effect
+            document.body.style.transition = 'opacity 1s';
+            document.body.style.opacity = '0';
+
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+
+        // Start boot sequence
+        setTimeout(() => {
+            addBootLine();
+        }, 500);
+
+        // Random glitch intervals
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                document.body.classList.add('signal-loss');
+                setTimeout(() => {
+                    document.body.classList.remove('signal-loss');
+                }, 100);
+            }
+        }, 3000);
+
+        // Occasional flicker
+        setInterval(() => {
+            if (Math.random() > 0.8) {
+                document.body.classList.add('flicker');
+                setTimeout(() => {
+                    document.body.classList.remove('flicker');
+                }, 200);
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
