@@ -36,7 +36,9 @@ A retro Windows 98-inspired operating system interface running entirely in your 
 ## 🚀 Getting Started
 
 ### Online Demo
-**GitHub Pages setup required**: To enable the live demo, go to your repository Settings → Pages → Source and select "main" branch. The demo will then be available at: `https://rebelwithoutacause.github.io/NostalgiaOS_Demo/`
+🌐 **[Launch NostalgiaOS Demo](https://rebelwithoutacause.github.io/NostalgiaOS_Demo/)**
+
+Experience the retro operating system directly in your browser!
 
 ### Local Installation
 1. Clone the repository:
